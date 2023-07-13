@@ -21,6 +21,9 @@ jobs:
       - name: Run playwright tests
         run: npx playwright test
 
+      - name: Generate allure report
+        run: allure serve results
+
       - name: Get Allure history
         uses: actions/checkout@v2
         if: always()
