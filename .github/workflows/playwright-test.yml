@@ -1,43 +1,51 @@
 name: Playwright Test
+
 on:
-  workflow_dispatch:
   push:
     branches: [main]
+
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: "18"
+          cache: "npm"
+      - run: npm ci
+      - run: npx playwright install
+      - run: npm test
 
-      - name: Install dependencies
-        run: npm ci
+      - uses: actions/upload-artifact@master
+        with:
+          name: allure-results
+          path: allure-results
+          retention-days: 20
 
-      - name: Install playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Run playwright tests
-        run: npx playwright test
-
-      - name: Get Allure History
+      - name: Get Allure history
         uses: actions/checkout@v3
+        if: always()
         continue-on-error: true
         with:
           ref: gh-pages
           path: gh-pages
 
-      - name: Allure Report action from marketplace
+      - name: Test marketplace action
         uses: simple-elf/allure-report-action@master
+        if: always()
         id: allure-report
         with:
-          allure_results: allure_results
-          gh_pages: gh_pages
-          allure_report: allure_report
-          allure_history: allure_history
+          allure_results: allure-results
+          gh_pages: gh-pages
+          allure_report: allure-report
+          allure_history: allure-history
+          keep_reports: 20
 
-      - name: Deploy report to github Pages
+      - name: Deploy report to Github Pages
+        if: always()
         uses: peaceiris/actions-gh-pages@v2
         env:
           PERSONAL_TOKEN: ${{ secrets.TOKEN }}
