@@ -7,6 +7,7 @@ test("should be able to signup to our application", async ({
   request,
   context,
 }) => {
+  console.log("should be able to signup to our application started");
   const user = new User(request, context);
   const signupPage = new WebPage(page);
   await signupPage.signUp(user);
